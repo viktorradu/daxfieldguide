@@ -110,7 +110,7 @@ All Sales Count = COUNTROWS(ALL('FactSale'))
 ## DAX basics 4
 **Measure name:** Average Unit Price
 
-**Calculation:** Average Unit Price from the Product table
+**Calculation:** Average Unit Price from the FactSale table
 Test | Result
 -|-
 Card with no filters on the page | 45
