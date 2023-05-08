@@ -295,10 +295,8 @@ Sales All Selected Colors = CALCULATE(SUM(FactSale[Amount]), ALLSELECTED('Produc
 Test | Result
 -|-
 Card with no filters on the page	|100%
-Card with a slicer by Color set to Blue |84.56M
-Card with a slicer by Size set to M | 14.12M
-Table containing Color, Amount, and Sales All Colors | The Sales All Colors shows 405,729,746 in every row
-Table containing Color, Amount, and Sales All Selected Colors with a slicer set to Blue and Gray (hold Ctrl shen selecting multiple values) | The Sales All Selected Colors shows 98,527,252 in every row
+Card with a slicer by Color set to Blue |20.84%
+Table containing Color, Amount, and Sales Ratio to All | The Sales All Colors shows different values for each row. Gray is 3.44% and Red is 2.74%.
 
 <br/>
 
@@ -308,6 +306,7 @@ Table containing Color, Amount, and Sales All Selected Colors with a slicer set 
 1. Capture sales SUM in the current context.
 2. Capture sales SUM for ALL fact records
 3. Divide sales in current context by the sales fo all records
+4. Change the measure Format to %
 </details>
 
 <br/>
