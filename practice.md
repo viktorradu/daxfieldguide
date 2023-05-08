@@ -1,12 +1,12 @@
 # Practice Prerequisites
 
 Following prerequisites and setup must be complete for successful completion of the exercise: 
-- Download the Power BI Content: Go to https://github.com/viktorradu/daxfieldguide/blob/main/assets.zip  and download the Assets.zip file. Create a folder called DAX on the C drive of your local machine. Copy all contents from the archive to the DAX folder you just created (C:\DAX).  
-- Download and install Power BI Desktop. Use the Microsoft App Store to download and install Power BI Desktop app.  
+- Download and install Power BI Desktop. Use the Microsoft App Store to download and install Power BI Desktop app. 
+- Download the Power BI practice file: Go to https://github.com/viktorradu/daxfieldguide/ and download the practice.pbix file.  
 
 
 # Dataset
-The practice dataset contains a star schema reflecting sales across multiple stock items, dates, and locations. The existing model is sufficient to support every practice problem solution, so there is no need to add or modify any relationships.
+The practice dataset contains a star schema reflecting sales across multiple products, dates, and locations. The existing model is sufficient to support every practice problem described below, so there is no need to add or modify any relationships.
 Please review the data model to familiarize yourself with the existing tables and relationships.
 Most exercises refer to sales transactions stored in the FactSales table. The sale amount is stored in the Amount column.
 
