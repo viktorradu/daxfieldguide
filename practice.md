@@ -17,7 +17,7 @@ Create a calculated column in the Product table.
 
 **Column name**: Tax per Unit
 
-**Calculation**: Unit Price multiplied by Tax Rate
+**Calculation**: Unit Price multiplied by Tax Rate. 
 Test | Result
 ---|---
 Card visualizing the Sum of the new column | 4.53K
@@ -41,7 +41,7 @@ Same card with a slicer by Color set to Red | 392
 <summary>View Solution</summary>
 
 ```DAX
-Tax per Unit = 'Product'[Unit Price] * 'Product'[Tax Rate]
+Tax per Unit = 'Product'[Unit Price] * 'Product'[Tax Rate] / 100
 ```
 </details>
 
