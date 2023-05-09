@@ -327,7 +327,7 @@ return r
 ## Time intelligence 1
 **Measure name:** Sales YTD
 
-**Calculation:** Total sales from the beginning of the current year to the current date. Base this calculation on the MonthEnd column.
+**Calculation:** Total sales from the beginning of the current year to the current date. Base this calculation on the MonthEnd column. Make sure a nonblank value is only returned when the total sales in the current context are not blank.
 Test | Result
 -|-
 Card with no filters on the page|53.67M
@@ -336,15 +336,61 @@ Line and Stacked Column Chart built for MonthEnd, Amount, and Sales YTD|<img src
 
 <br/>
 
+<details>
+<summary>View Hint</summary>
+
+1. Use TOALYTD() or DATESYTD() with a CALCULATE()
+2. Use the IF() and ISBLANK() functions to make sure the expression returns BLANK() when the total of sales is blank.
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Sales YTD = IF(
+    ISBLANK(SUM(FactSale[Amount])), 
+    BLANK(), 
+    TOTALYTD(SUM(FactSale[Amount]), 'Date'[MonthEnd])
+)
+```
+</details>
+<br/>
+
 ## Time intelligence 2
 **Measure name:** Sales MoM Delta
 
-**Calculation:** Difference between the total sales for the current month and the previous month. Base this calculation on the MonthEnd column.
+**Calculation:** Difference between the total sales for the current month and the previous month. Base this calculation on the MonthEnd column. Make sure a nonblank value is only returned when the total sales in the current context are not blank.
 Test | Result
 -|-
 Card with a slicer by Date set to dates from 1/31/2013 to 8/31/2015|8.80M
 Line and Stacked Column Chart built for MonthEnd, Amount, and Sales MoM Delta|<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/time-intelligence-2.png" />
 
+<br/>
+
+<details>
+<summary>View Hint</summary>
+
+1. Calculate total sales in the current context.
+2. Calculate sales in previous month using the CALCULATE() and PREVIOUSMONTH() functions.
+3. Subtract previous month amount from the current context amount.
+4. Use the IF() and ISBLANK() functions to make sure the expression returns BLANK() when the total of sales is blank.
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Sales MoM delta = 
+var currentPeriod = SUM(FactSale[Amount])
+var prevPeriod = CALCULATE(SUM(FactSale[Amount]), PREVIOUSMONTH('Date'[Date]))
+var result = IF(ISBLANK(currentPeriod), BLANK(), currentPeriod - prevPeriod)
+return result
+```
+</details>
 <br/>
 
 ## Time intelligence 3
@@ -356,6 +402,29 @@ Test | Result
 Card with a slicer by Date set to dates from 1/31/2013 to 8/31/2015|10.47M
 Line and Stacked Column Chart built for MonthEnd, Amount, and Sales L3M Average|<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/time-intelligence-3.png" />
 
+<br/>
+
+<details>
+<summary>View Hint</summary>
+
+1. Capture the value of the currently selected monthend
+2. Use the DATESINPERIOD function to calculate the list of monthends in the last 3 months.
+3. Use the CALCULATE() function to determinte the total sales providing the list of dates as the second argument.
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Sales L3M Average = 
+var currentMonthend = SELECTEDVALUE('Date'[MonthEnd])
+var last3months = DATESINPERIOD('Date'[MonthEnd], currentMonthend, -3, MONTH)
+var result = CALCULATE(SUM(FactSale[Amount]), last3months) / 3
+return result
+```
+</details>
 <br/>
 
 ## Cumulative total 1
@@ -370,6 +439,27 @@ Line and Stacked Column Chart built for Sales Territory, Amount, and Cumulative 
 
 <br/>
 
+<details>
+<summary>View Hint</summary>
+
+1. Capture the Territory Priority value selected in the current context
+2. CALCULATE the total sales where Territory Priority is less then or equal to the selected value. Make sure you include all territories by removing all filters from the City table using the ALL function. 
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Cumulative by Category = 
+var currentCategory = MAX(City[Territory Priority])
+var result = CALCULATE(SUM(FactSale[Amount]), ALL(City),City[Territory Priority] <= currentCategory)
+return result
+```
+</details>
+<br/>
+
 
 ## Cumulative total 2
 **Measure name:** Cumulative by Value
@@ -381,6 +471,33 @@ Card with a slicer by Color set to Gray|14M
 Card with a slicer by Color set to Gray and a slicer by Sales Territory set to Great Lakes|11M
 Line and Stacked Column Chart built for Sales Territory, Amount, and Cumulative by Category sorted by Sales Territory |<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/cumulative-total-2.png" />
 
+<br/>
+
+<details>
+<summary>View Hint</summary>
+
+1. Capture the currently selected territory
+2. Build a summary table of all sales territories and the corresponding sales. Use SUMMARIZE() and ALL() function to do this.
+3. Add a rank column to the summary table using ADDCOLUMNS() and RANKX() functions.
+4. Find the current selected territory rank from teh summary table using FILTER() and MAXX() functions.
+5. Calculate total sales for the territories in the summary table that have a rank that is same as or below the currently selected territory
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Cumulative by Value = 
+var currentTerritory = SELECTEDVALUE(City[Sales Territory])
+var categories = SUMMARIZE(ALL(City), City[Sales Territory], "Sales", SUM(FactSale[Amount]))
+var rankedCategories = ADDCOLUMNS(categories, "Rank", RANKX(categories, [Sales], [Sales], DESC))
+var currentCategoryRank = MAXX(FILTER(rankedCategories, City[Sales Territory] = currentTerritory), [Rank])
+var result = SUMX(FILTER(rankedCategories, [Rank] <= currentCategoryRank || ISBLANK(currentCategoryRank)), [Sales])
+return result
+```
+</details>
 <br/>
 
 ## Cumulative total 3
