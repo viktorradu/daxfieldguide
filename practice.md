@@ -353,7 +353,7 @@ Line and Stacked Column Chart built for MonthEnd, Amount, and Sales MoM Delta|<i
 **Calculation:** Average of the total sales over the current and two previous months. Base this calculation on the MonthEnd column.
 Test | Result
 -|-
-Card with a slicer by Date set to dates from 1/31/2013 to 8/31/2015|10.47M
+Card with a slicer by Date set to dates from 1/31/2013 to 8/31/2015|133.10M
 Line and Stacked Column Chart built for MonthEnd, Amount, and Sales L3M Average|<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/time-intelligence-3.png" />
 
 <br/>
