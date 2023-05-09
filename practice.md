@@ -364,7 +364,7 @@ Sales YTD = IF(
 **Calculation:** Difference between the total sales for the current month and the previous month. Base this calculation on the MonthEnd column. Make sure a nonblank value is only returned when the total sales in the current context are not blank.
 Test | Result
 -|-
-Card with a slicer by Date set to dates from 1/31/2013 to 8/31/2015|300.93M
+Card with a slicer by Date set to dates from 1/31/2013 to 8/31/2015|-3.37M
 Line and Stacked Column Chart built for MonthEnd, Amount, and Sales MoM Delta|<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/time-intelligence-2.png" />
 
 <br/>
@@ -385,8 +385,9 @@ Line and Stacked Column Chart built for MonthEnd, Amount, and Sales MoM Delta|<i
 
 ```DAX
 Sales MoM delta = 
-var currentPeriod = SUM(FactSale[Amount])
-var prevPeriod = CALCULATE(SUM(FactSale[Amount]), PREVIOUSMONTH('Date'[Date]))
+var currentMonthend = MAX('Date'[MonthEnd])
+var currentPeriod = CALCULATE(SUM(FactSale[Amount]), 'Date'[MonthEnd] = currentMonthend)
+var prevPeriod = CALCULATE(SUM(FactSale[Amount]), 'Date'[MonthEnd] =  EOMONTH(currentMonthend, -1))
 var result = IF(ISBLANK(currentPeriod), BLANK(), currentPeriod - prevPeriod)
 return result
 ```
