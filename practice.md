@@ -538,21 +538,71 @@ return result
 ## Virtual Relationships 1
 **Measure name:** Same City Ratio
 
-**Calculation:** Ratio of total sales in the currently selected city (asuming there is onle one selected) to the sales of all products manufactured in the currently selected city. Use the existing inactive relationship beween Product and City table.
+**Calculation:** Ratio of total sales in the currently selected city (assuming there is only one selected) to the sales of all products manufactured in the currently selected city. Use the existing inactive relationship beween Product and City table.
 Test | Result
 -|-
 Table visualizing City Key, City, and Same City Ratio |<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/virtual-relationships-1.png" />
 
 <br/>
 
+<details>
+<summary>View Hint</summary>
+
+1. Capture the currently selected city key
+2. Calculate total sales in the current city
+3. Calculate the sales amount with the relationship between Manufacture City Key and City Key activated
+4. Divide total sales in the current city by the sales from step 3
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Same City Ratio = 
+var _city = SELECTEDVALUE(City[City Key])
+var salesOfAll = sum(FactSale[Amount])
+var salesOfManufactured = CALCULATE(SUM(FactSale[Amount]), USERELATIONSHIP('Product'[Manufacture City Key], City[City Key]), 'Product'[Manufacture City Key] = _city)
+var result = DIVIDE(salesOfAll, salesOfManufactured)
+return result
+```
+</details>
+<br/>
+
 ## Virtual Relationships 2
 **Measure name:** Same City Ratio Treatas
 
-**Calculation:** Ratio of total sales in the currently selected city (asuming there is onle one selected) to the sales of all products manufactured in the currently selected city. Use TREATAS function to apply a City table filter to the Product table.
+**Calculation:** Ratio of total sales in the currently selected city (assuming there is only one selected) to the sales of all products manufactured in the currently selected city. Use TREATAS function to apply a City table filter to the Product table.
 Test | Result
 -|-
 Table visualizing City Key, City, and Same City Ratio |<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/virtual-relationships-2.png" />
 
+<br/>
+
+<details>
+<summary>View Hint</summary>
+
+1. Capture the currently selected city key
+2. Calculate total sales in the current city
+3. Calculate the sales amount for ALL cities while including the TREATAS filter of the Manufacture City Key by the selected city key
+4. Divide total sales in the current city by the sales from step 3
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Same City Ratio Treatas = 
+var _cityKey = SELECTEDVALUE(City[City Key])
+var salesOfAll = sum(FactSale[Amount])
+var salesOfManufactured = CALCULATE(SUM(FactSale[Amount]), All(City), TREATAS({_cityKey}, 'Product'[Manufacture City Key]))
+var result = DIVIDE(salesOfAll, salesOfManufactured)
+return result
+```
+</details>
 <br/>
 
 ## Disconnected Table
@@ -564,6 +614,31 @@ Test | Result
 Column Chart visualizing Value and Histogram with a slicer by Value set to 0-4 |<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/disconnected-table-1.png" />
 Column Chart visualizing Value and Histogram with a slicer by Value set to 0-10 |<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/disconnected-table-2.png" />
 
+<br/>
+
+<details>
+<summary>View Hint</summary>
+
+1. Capture the currently selected bin.
+2. Calculate the total count of bins available in the current visualization.
+3. Calculate the bin size. Divide the maximum sales amount by the count of bins.
+4. Count the sales transactions that have Amount falling within the current bin range. Use COUNTROWS and FILTER functions.
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Histogram = 
+var currentBin = SELECTEDVALUE(Bins[Value])
+var totalBins = CALCULATE(max(Bins[Value]), ALLSELECTED(Bins[Value]))
+var binSize = max(FactSale[Amount]) / totalBins
+var result = COUNTROWS(FILTER(FactSale, FactSale[Amount] > (currentBin -1)* binSize && FactSale[Amount] <= currentBin * binSize))
+return result
+```
+</details>
 <br/>
 
 ## Linear Regression
@@ -585,4 +660,43 @@ Test | Result
 Line Chart visualizing Date[MonthEnd], Regression Actual, and Regression with a slicer by 'Regression Date'[MonthEnd] set to 12/6/2013 - 3/30/2016 |<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/linear-regression-1.png" />
 Line Chart visualizing Date[MonthEnd], Regression Actual, and Regression with a slicer by 'Regression Date'[MonthEnd] set to 12/24/2014 - 3/30/2016 |<img src="https://github.com/viktorradu/daxfieldguide/raw/main/img/linear-regression-2.png" />
 
+<br/>
+
+<details>
+<summary>View Hint</summary>
+
+Regression Actual
+1. Capture the earliest monthend available in the Regression Date table in the current context.
+2. Capture the latest monthend available in the Regression Date table in the current context.
+3. Calculate the sales amount where the monthend from the Date table falls fithin the range from step 1 to step 2. 
+
+Regression
+1. Capture the input table that summarizes ALLSELECTED sales transactions and contains Date[Monthend] as the grouping table and Regression Actual measure as the Sales column.
+2. Filter the summary table to remove any rows that have blank Sales.
+3. Use LINESTX function to calculate the linear regression parameter for the summary table setting Sales as the Y value and Monthend as the X value.
+4. Use the slope * X + intercept formula to calculate the regression value for the currently selected Monthend
+</details>
+
+<br/>
+
+<details>
+<summary>View Solution</summary>
+
+```DAX
+Regression Actual = 
+var datesFrom = MIN('Regression Date'[MonthEnd])
+var datesTo = MAX('Regression Date'[MonthEnd])
+var result = CALCULATE( SUM(FactSale[Amount]), KEEPFILTERS('Date'), 'Date'[MonthEnd] >= datesFrom && 'Date'[MonthEnd] <= datesTo)
+return result
+
+Regression = 
+var inputTable = SUMMARIZE(ALLSELECTED(FactSale), 'Date'[MonthEnd], "Sales", [Regression Actual])
+var nonBlankInput = FILTER(inputTable, NOT(ISBLANK([Sales])))
+var linReg = LINESTX(nonBlankInput, [Sales], 'Date'[MonthEnd])
+var slope = MAXX(linReg, [Slope1])
+var intercept = MAXX(linReg, [Intercept])
+var line = slope * SELECTEDVALUE('Date'[MonthEnd]) + intercept
+return line
+```
+</details>
 <br/>
